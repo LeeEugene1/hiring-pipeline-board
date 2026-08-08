@@ -80,3 +80,27 @@
 - PR의 첫 GitHub Actions 실행은 통과했지만 로그에서 shallow checkout과 detached HEAD 때문에 커밋 수와 브랜치명이 부정확한 문제를 발견했다.
 - 전체 Git 이력을 checkout하고 `GITHUB_HEAD_REF`를 우선 사용하도록 수정한 뒤 두 번째 원격 실행에서 커밋 7개, 커밋 제목 형식, `chore/github-actions` 브랜치 인식을 확인했다.
 - 두 번째 GitHub Actions 실행은 제출 검증 19개 통과, 경고 2개, 실패 0개로 완료됐고 애플리케이션 초기화 전 Node 검증 보류 안내도 확인했다.
+
+## 04. Vercel과 GitHub 저장소 연결
+
+### 관련 커밋
+
+`chore(deploy): Vercel Git 연동을 기록한다`
+
+### 프롬프트 원문
+
+> vercel 연동해줘
+
+### AI 출력 요지
+
+- Vercel 프로젝트를 생성하고 현재 저장소를 로컬 프로젝트 및 GitHub 자동 배포 소스로 연결하도록 제안했다.
+- 로컬 전용 프로젝트 식별자가 커밋되지 않도록 `.vercel` 디렉터리를 제외하도록 제안했다.
+- 애플리케이션이 아직 초기화되지 않았으므로 실제 배포 URL을 완료된 결과로 기록하지 않도록 제안했다.
+
+### 리뷰 및 검증
+
+- 만료된 Vercel CLI 인증을 기기 인증으로 갱신하고 `leeeugene1s-projects/hiring-pipeline-board` 프로젝트 생성을 확인했다.
+- Vercel 계정의 GitHub OAuth 연결과 GitHub App의 저장소 접근 권한이 별개임을 확인하고, `LeeEugene1/hiring-pipeline-board` 저장소 접근만 허용했다.
+- Vercel Git 설정 화면에서 저장소가 연결됐다는 성공 알림과 `Connected just now` 상태를 확인했다.
+- Vercel CLI로 프로젝트 소유자, 루트 디렉터리, Node.js 24.x 설정을 확인했다.
+- 아직 `package.json`과 애플리케이션이 없어 배포가 생성되지 않은 상태를 확인하고, 빈 저장소를 실제 배포 완료로 표현하지 않았다.
