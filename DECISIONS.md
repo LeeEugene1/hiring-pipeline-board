@@ -27,19 +27,33 @@ AI는 반복 사용 시 스킬이 적합하다고 제안했지만, 단일 과제
 
 독립된 기능은 별도 worktree와 기능 브랜치에서 병렬로 개발할 수 있게 한다. 다만 공통 문서, 의존성 파일, 애플리케이션 진입점과 공통 타입은 메인 에이전트가 단독으로 통합한다. 무제한 병렬 작업보다 파일 소유권과 의존 관계를 먼저 확인하는 통제된 병렬 방식을 선택했다.
 
-## 결정 2. React, TypeScript, Vite를 사용한다
+## 결정 2. 클라이언트 애플리케이션에 필요한 도구만 조합한다
 
 ### 배경
 
-실작업 시간이 제한된 프론트엔드 과제에서 빠른 초기 설정과 명확한 데이터 타입이 필요하다.
+단일 보드 화면에서 브라우저 API, Mock API와 낙관적 업데이트를 구현해야 한다. 애플리케이션 실행 환경, 스타일링, UI Primitive와 상태 관리 도구의 역할이 겹치지 않게 정해야 한다.
+
+### 검토한 선택지
+
+- Vite + React와 Next.js App Router
+- Tailwind CSS 단독 사용과 Tailwind CSS + shadcn/ui 전체 도입
+- React 내부 상태와 Zustand 전역 Store
 
 ### 최종 결정
 
-React, TypeScript, Vite를 기본 애플리케이션 스택으로 사용한다.
+React, TypeScript, Vite를 애플리케이션 기반으로 사용한다. Tailwind CSS로 보드와 카드 스타일을 직접 구성하고, shadcn/ui는 상세 패널처럼 접근성 상호작용이 복잡한 컴포넌트만 필요한 기능 이슈에서 추가한다. 후보자 API 상태는 TanStack Query, 검색어·필터·선택 ID 같은 화면 상태는 React `useState`로 관리한다. Zustand는 도입하지 않는다.
 
 ### 이유와 트레이드오프
 
-서버 렌더링이 필요하지 않은 보드 애플리케이션이므로 Next.js의 추가 기능보다 단순한 개발 환경을 우선한다.
+이 과제는 SEO, 서버 렌더링, 서버 컴포넌트와 다중 라우트가 필요하지 않다. 대부분의 기능이 `localStorage`, 이벤트와 클라이언트 상태를 사용하므로 Next.js를 선택하면 Client Component 경계만 늘어난다.
+
+Tailwind CSS는 반응형 보드 레이아웃을 빠르게 조정할 수 있고 스타일 근거가 컴포넌트 가까이에 드러난다. shadcn/ui 전체 도입은 사용하지 않는 생성 코드와 의존성을 늘리므로 기각했다. 대신 포커스 관리가 필요한 UI Primitive만 코드를 검토한 뒤 선택적으로 추가한다.
+
+TanStack Query가 후보자 목록, 로딩·오류, mutation과 rollback의 단일 원본을 담당한다. 같은 후보자 데이터를 Zustand에 복제하면 성공, 실패와 재조회 때 두 상태를 동기화해야 한다. 현재 화면 전용 상태는 가장 가까운 공통 부모의 React 상태로 충분하다. Undo처럼 여러 기능이 공유하는 복잡한 클라이언트 상태가 추가되면 `useReducer`를 먼저 검토하고, 한계가 확인될 때 Zustand를 다시 평가한다.
+
+### AI 제안 검토
+
+AI가 Next.js, Tailwind CSS와 shadcn/ui, Zustand의 장단점을 비교한 결과를 그대로 채택하지 않고 과제의 데이터 흐름과 실제 사용 범위에 대입했다. Next.js 서버 기능, shadcn/ui 전체 설치와 Zustand 후보자 Store는 현재 요구사항에 불필요한 복잡성과 중복 상태를 추가한다고 판단해 기각했다.
 
 ## 결정 3. MSW와 localStorage로 Mock API를 구성한다
 

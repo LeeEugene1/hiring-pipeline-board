@@ -22,10 +22,12 @@
 - 서버 상태: TanStack Query
 - Mock API: MSW
 - 테스트: Vitest, Testing Library
-- 스타일: CSS Modules
+- 스타일: Tailwind CSS
+- UI Primitive: 실제 필요한 경우에만 shadcn/ui 컴포넌트를 선택적으로 추가
+- 클라이언트 상태: React `useState`, 필요 시 `useReducer`
 - 아이콘: Lucide React
 
-다른 라이브러리를 추가할 때는 기존 도구로 해결할 수 없는 이유를 먼저 확인한다. 핵심 상태 로직을 대신하는 라이브러리를 추가한 경우 선택 이유를 `DECISIONS.md`에 기록한다.
+후보자 데이터와 API 상태를 별도 전역 Store에 복제하지 않는다. 다른 라이브러리를 추가할 때는 기존 도구로 해결할 수 없는 이유를 먼저 확인한다. 핵심 상태 로직을 대신하는 라이브러리를 추가한 경우 선택 이유를 `DECISIONS.md`에 기록한다.
 
 ## 필수 구현 범위
 
