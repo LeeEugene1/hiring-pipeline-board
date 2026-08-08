@@ -97,4 +97,6 @@ src/
 
 ## 배포 링크
 
-Vercel 프로젝트 `leeeugene1s-projects/hiring-pipeline-board`를 사용합니다. GitHub Actions 기반 Production 배포를 실제로 검증한 뒤 공개 URL을 추가합니다.
+Vercel 프로젝트 `leeeugene1s-projects/hiring-pipeline-board`를 사용합니다. `main`의 GitHub Actions 검증을 통과한 Production 배포입니다.
+
+- Production: https://hiring-pipeline-board.vercel.app

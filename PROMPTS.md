@@ -178,6 +178,8 @@
 
 `fix(lint): Vercel 산출물을 검사에서 제외한다`
 
+`docs(deploy): Production 배포 결과를 기록한다`
+
 ### 프롬프트 원문
 
 > 해당프로젝트 GitHub Actions를 추가해 PR마다 validate-submission.sh, 테스트, 린트, 빌드를 실행하도록 구성해줘
@@ -202,4 +204,5 @@
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`를 저장소 Actions Secrets에 등록했으며 값은 로그와 문서에 기록하지 않았다.
 - Node 22.22.2에서 의존성 설치, 린트, 타입 검사, 테스트와 프로덕션 빌드를 실행해 통과했고 Vercel Preview 환경의 prebuilt 빌드도 통과했다.
 - 로컬 Vercel 빌드 후 제출 검증을 반복하자 ESLint가 `.vercel/output`의 생성 번들을 검사하는 문제를 발견했다. 생성물을 수정하지 않고 ESLint 전역 제외 경로에 `.vercel`을 추가했다.
-- PR #19에서 제출 검증과 GitHub Actions 기반 Vercel Preview 배포가 통과한 것을 확인했다. Production 배포는 사용자가 PR을 병합한 뒤 `main` push에서 실행되므로 아직 완료로 기록하지 않는다.
+- PR #19에서 제출 검증과 GitHub Actions 기반 Vercel Preview 배포가 통과한 것을 확인했다.
+- 사용자가 PR #19를 merge commit 방식으로 병합한 뒤 `main` 워크플로에서 제출 검증과 Vercel Production 배포가 모두 통과했다. 고정 Production URL `https://hiring-pipeline-board.vercel.app`의 배포를 확인했다.
