@@ -159,7 +159,24 @@ else
   report_warning '아직 package.json이 없어 자동 검증 명령을 실행하지 않았습니다.'
 fi
 
-print_section '8. 작업 트리 상태'
+print_section '8. Pull Request 작업 흐름'
+
+current_branch="$(git branch --show-current)"
+if git remote get-url origin >/dev/null 2>&1; then
+  report_pass 'origin 원격 저장소가 연결되어 있습니다.'
+else
+  report_warning 'origin 원격 저장소가 없어 Pull Request를 생성할 수 없습니다.'
+fi
+
+if [[ "$current_branch" == 'main' && -n "$(git status --porcelain)" ]]; then
+  report_failure 'main 브랜치에 직접 변경사항이 있습니다. 기능 브랜치를 먼저 생성해야 합니다.'
+elif [[ "$current_branch" == 'main' ]]; then
+  report_pass 'main 브랜치 작업 트리가 깨끗합니다.'
+else
+  report_pass "현재 ${current_branch} 기능 브랜치에서 작업 중입니다."
+fi
+
+print_section '9. 작업 트리 상태'
 
 if [[ -z "$(git status --porcelain)" ]]; then
   report_pass '커밋되지 않은 변경사항이 없습니다.'
