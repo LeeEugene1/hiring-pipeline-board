@@ -1,6 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { createCandidateSeed } from '../../data/candidateSeed'
 import { PipelineBoard } from './PipelineBoard'
 
 describe('파이프라인 보드 레이아웃', () => {
@@ -27,5 +28,23 @@ describe('파이프라인 보드 레이아웃', () => {
     expect(screen.getByLabelText('처우협의 지원자 0명')).toBeInTheDocument()
     expect(screen.getByLabelText('최종합격 지원자 0명')).toBeInTheDocument()
     expect(screen.getByLabelText('불합격 지원자 0명')).toBeInTheDocument()
+  })
+
+  it('지원자 배열을 단계별로 나누고 각 지원자를 한 번만 표시한다', () => {
+    const candidates = createCandidateSeed(5)
+
+    render(<PipelineBoard candidates={candidates} />)
+
+    candidates.forEach((candidate) => {
+      expect(
+        screen.getAllByRole('article', { name: candidate.name }),
+      ).toHaveLength(1)
+    })
+
+    expect(screen.getByLabelText('서류검토 지원자 1명')).toBeInTheDocument()
+    expect(screen.getByLabelText('면접 지원자 1명')).toBeInTheDocument()
+    expect(screen.getByLabelText('처우협의 지원자 1명')).toBeInTheDocument()
+    expect(screen.getByLabelText('최종합격 지원자 1명')).toBeInTheDocument()
+    expect(screen.getByLabelText('불합격 지원자 1명')).toBeInTheDocument()
   })
 })

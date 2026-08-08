@@ -1,6 +1,6 @@
 import { BriefcaseBusiness } from 'lucide-react'
 
-import { PipelineBoard } from '../features/board/PipelineBoard'
+import { CandidatePipelineBoard } from '../features/board/CandidatePipelineBoard'
 
 export function App() {
   return (
@@ -18,7 +18,7 @@ export function App() {
         aria-label="채용 파이프라인 작업 영역"
         className="mx-auto max-w-screen-2xl px-4 py-6 sm:px-6"
       >
-        <PipelineBoard />
+        <CandidatePipelineBoard />
       </section>
     </main>
   )
