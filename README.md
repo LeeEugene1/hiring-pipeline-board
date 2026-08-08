@@ -2,6 +2,10 @@
 
 채용 담당자가 지원자를 채용 단계별로 조회하고 이동할 수 있는 프론트엔드 과제 프로젝트입니다.
 
+- 배포: [hiring-pipeline-board.vercel.app](https://hiring-pipeline-board.vercel.app)
+- 요구사항 해석과 기술 선택: [DECISIONS.md](./DECISIONS.md)
+- AI 협업 및 검증 기록: [PROMPTS.md](./PROMPTS.md)
+
 ## 설치 및 실행 방법
 
 Node.js 22.12 이상이 필요합니다.
@@ -13,29 +17,35 @@ npm run dev
 
 ## 주요 기능
 
-- React 애플리케이션과 TanStack Query Provider 구성
-- 서류검토, 면접, 처우협의, 최종합격, 불합격 단계 보드
-- 좁은 화면에서 단계 순서를 유지하는 가로 스크롤 레이아웃
-- TanStack Query로 조회한 지원자를 현재 단계별 카드로 분류
-- 카드에 지원자 이름, 직무, 지원일과 현재 단계 표시
-- MSW 기반 후보자 조회·단계 변경 API
-- 200명의 후보자 seed와 `localStorage` 영속 저장
-- 모든 API 요청의 200~800ms 지연과 기본 15% 실패 시뮬레이션
-- 린트, 타입 검사, 테스트와 프로덕션 빌드 자동 검증
+- 서류검토, 면접, 처우협의, 최종합격, 불합격의 다섯 단계 칸반 보드
+- 이름, 직무, 지원일과 현재 단계를 표시하는 지원자 카드 200건
+- 전체 단계 선택 메뉴와 인접 단계 이동 버튼
+- 마우스와 키보드를 지원하는 단계 변경
+- Mock API 저장과 새로고침 이후 변경 상태 유지
+- 200~800ms 지연, 약 15% 실패와 카드별 오류 피드백
+- 좁은 화면에서도 단계 순서를 유지하는 보드 내부 가로 스크롤
+
+## 지원자 단계 이동
+
+- 가운데 단계 선택 메뉴에서 모든 채용 단계로 자유롭게 이동할 수 있습니다.
+- 왼쪽·오른쪽 버튼으로 인접한 이전·다음 단계로 바로 이동할 수 있습니다.
+- 첫 단계의 왼쪽 버튼과 마지막 단계의 오른쪽 버튼은 비활성화됩니다.
+- `Tab`으로 버튼에 접근하고 `Enter` 또는 `Space`로 실행할 수 있습니다. 단계 메뉴 안에서는 방향키와 `Enter`를 사용합니다.
+- PATCH 성공 후 카드를 새 컬럼으로 이동하고, 실패하면 기존 컬럼과 카드별 오류 메시지를 유지합니다.
+
+DnD 대신 명시적 액션을 선택한 배경과 트레이드오프는 [DECISIONS.md](./DECISIONS.md#결정-4-명시적-액션-버튼으로-단계를-이동한다)에 기록했습니다.
 
 ## 기술 스택
 
-- React
-- TypeScript
-- Vite
-- TanStack Query
-- MSW
-- Vitest
-- Testing Library
-- Tailwind CSS
-- Lucide React
+| 구분 | 사용 기술 |
+|---|---|
+| 애플리케이션 | React, TypeScript, Vite |
+| 서버 상태 | TanStack Query |
+| Mock API | MSW, localStorage |
+| 스타일과 UI | Tailwind CSS, Radix UI Dropdown Menu, Lucide React |
+| 테스트 | Vitest, Testing Library |
 
-shadcn/ui는 전체 컴포넌트를 미리 설치하지 않고 상세 패널처럼 접근성 상호작용이 복잡한 기능에서 필요한 컴포넌트만 추가합니다. 클라이언트 화면 상태는 React 내부 상태로 관리하며 Zustand는 사용하지 않습니다.
+후보자 API 상태는 TanStack Query가 관리하고 화면 전용 상태는 React 내부 상태로 유지합니다. 별도 전역 상태 라이브러리는 사용하지 않습니다.
 
 ## Mock API
 
@@ -92,7 +102,7 @@ npm run build
 src/
 ├── app/      # 애플리케이션 화면, Provider와 smoke test
 ├── data/     # 후보자 seed와 localStorage 저장 계층
-├── features/ # 보드 등 사용자 기능
+├── features/ # 보드, 지원자 카드와 단계 이동 기능
 ├── mocks/    # MSW handler와 네트워크 정책
 ├── test/     # 공통 테스트 설정
 ├── types/    # 후보자와 채용 단계 타입
@@ -100,6 +110,10 @@ src/
 └── main.tsx  # MSW 시작과 React 마운트
 ```
 
-## 배포 링크
+## 제외 범위와 후속 작업
+
+같은 컬럼 안에서 카드의 위·아래 순서를 변경하는 기능은 필수 요구사항이 아니므로 #7에서 제외했습니다. 구현 범위와 논의 내용은 [#20 컬럼 내 지원자 카드 순서 변경 구현](https://github.com/LeeEugene1/hiring-pipeline-board/issues/20)에서 관리합니다.
+
+## 배포
 
 Vercel 프로젝트 `leeeugene1s-projects/hiring-pipeline-board`를 사용합니다. GitHub Actions 기반 Production 배포를 실제로 검증한 뒤 공개 URL을 추가합니다.

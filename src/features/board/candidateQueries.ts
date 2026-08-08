@@ -6,6 +6,8 @@ type CandidatesResponse = {
   candidates: Candidate[]
 }
 
+export const CANDIDATES_QUERY_KEY = ['candidates'] as const
+
 export async function fetchCandidates(): Promise<Candidate[]> {
   const endpoint = new URL('/api/candidates', window.location.origin)
   const response = await fetch(endpoint)
@@ -21,7 +23,7 @@ export async function fetchCandidates(): Promise<Candidate[]> {
 
 export function useCandidates() {
   return useQuery({
-    queryKey: ['candidates'],
+    queryKey: CANDIDATES_QUERY_KEY,
     queryFn: fetchCandidates,
   })
 }

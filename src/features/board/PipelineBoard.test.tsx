@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -32,8 +33,13 @@ describe('파이프라인 보드 레이아웃', () => {
 
   it('지원자 배열을 단계별로 나누고 각 지원자를 한 번만 표시한다', () => {
     const candidates = createCandidateSeed(5)
+    const queryClient = new QueryClient()
 
-    render(<PipelineBoard candidates={candidates} />)
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PipelineBoard candidates={candidates} />
+      </QueryClientProvider>,
+    )
 
     candidates.forEach((candidate) => {
       expect(
