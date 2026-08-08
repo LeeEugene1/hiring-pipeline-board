@@ -95,6 +95,59 @@ describe('지원자 파이프라인 조회', () => {
     }
   })
 
+  it('이름 검색과 직무 필터를 함께 적용하고 초기화한다', async () => {
+    const user = userEvent.setup()
+    const queryClient = createTestQueryClient()
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CandidatePipelineBoard />
+      </QueryClientProvider>,
+    )
+
+    await screen.findByRole('article', { name: candidates[0].name })
+
+    await user.type(screen.getByRole('searchbox', { name: '이름 검색' }), '김')
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: '지원 직무' }),
+      candidates[0].role,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('검색 결과 1 / 5명')).toBeInTheDocument()
+    })
+    expect(
+      screen.getByRole('article', { name: candidates[0].name }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('article', { name: candidates[1].name }),
+    ).not.toBeInTheDocument()
+
+    await user.clear(screen.getByRole('searchbox', { name: '이름 검색' }))
+    await user.type(
+      screen.getByRole('searchbox', { name: '이름 검색' }),
+      '없는 지원자',
+    )
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('검색 결과 0 / 5명')).toBeInTheDocument()
+    })
+
+    await user.click(
+      screen.getByRole('button', { name: '검색 및 필터 초기화' }),
+    )
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('검색 결과 5 / 5명')).toBeInTheDocument()
+    })
+    expect(screen.getByRole('searchbox', { name: '이름 검색' })).toHaveValue(
+      '',
+    )
+    expect(screen.getByRole('combobox', { name: '지원 직무' })).toHaveValue(
+      'all',
+    )
+  })
+
   it('키보드로 선택한 단계를 PATCH 요청하고 성공 후 컬럼을 이동한다', async () => {
     const user = userEvent.setup()
     const queryClient = createTestQueryClient()
