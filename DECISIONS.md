@@ -55,9 +55,11 @@ Tailwind CSS는 반응형 보드 레이아웃을 빠르게 조정할 수 있고 
 
 TanStack Query가 후보자 목록, 로딩·오류, mutation과 rollback의 단일 원본을 담당한다. 같은 후보자 데이터를 Zustand에 복제하면 성공, 실패와 재조회 때 두 상태를 동기화해야 한다. 현재 화면 전용 상태는 가장 가까운 공통 부모의 React 상태로 충분하다. Undo처럼 여러 기능이 공유하는 복잡한 클라이언트 상태가 추가되면 `useReducer`를 먼저 검토하고, 한계가 확인될 때 Zustand를 다시 평가한다.
 
+검색어와 직무도 `CandidatePipelineBoard`의 React 내부 상태로 관리한다. 이름 검색어에만 `useDeferredValue`를 적용하고, API 원본 배열에서 직무 목록과 검색 결과를 `useMemo`로 파생한다. 200건은 별도 검색 인덱스나 전역 Store가 필요한 규모가 아니며, 직무 select는 입력 연속성이 필요하지 않으므로 지연하지 않고 즉시 반영한다. 문자열 정규화와 교집합 계산은 순수 함수로 분리한다.
+
 ### AI 제안 검토
 
-AI가 Next.js, Tailwind CSS와 shadcn/ui, Zustand의 장단점을 비교한 결과를 그대로 채택하지 않고 과제의 데이터 흐름과 실제 사용 범위에 대입했다. Next.js 서버 기능, shadcn/ui 전체 설치와 Zustand 후보자 Store는 현재 요구사항에 불필요한 복잡성과 중복 상태를 추가한다고 판단해 기각했다.
+AI가 Next.js, Tailwind CSS와 shadcn/ui, Zustand의 장단점을 비교한 결과를 그대로 채택하지 않고 과제의 데이터 흐름과 실제 사용 범위에 대입했다. Next.js 서버 기능, shadcn/ui 전체 설치와 Zustand 후보자 Store는 현재 요구사항에 불필요한 복잡성과 중복 상태를 추가한다고 판단해 기각했다. 검색 성능 접근은 debounce와 deferred value 중 타이머 정리와 테스트 대기가 필요 없는 React 내장 deferred value를 채택하되, 모든 필터 변경을 지연하는 초안은 직무 선택 피드백까지 늦추므로 이름 검색에만 적용하도록 범위를 줄였다.
 
 ## 결정 3. MSW와 localStorage로 Mock API를 구성한다
 
