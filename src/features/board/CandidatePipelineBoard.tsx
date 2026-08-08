@@ -7,6 +7,11 @@ import {
   getCandidateRoles,
 } from '../filter/candidateFilter'
 import type { Candidate } from '../../types/candidate'
+import {
+  BoardEmptyState,
+  BoardErrorState,
+  BoardLoadingState,
+} from './states'
 import { useCandidates } from './candidateQueries'
 import { PipelineBoard } from './PipelineBoard'
 
@@ -26,24 +31,25 @@ export function CandidatePipelineBoard() {
   )
 
   if (candidatesQuery.isPending) {
-    return (
-      <p role="status" className="py-8 text-sm text-slate-600">
-        지원자를 불러오는 중입니다.
-      </p>
-    )
+    return <BoardLoadingState />
   }
 
   if (candidatesQuery.isError) {
     return (
-      <p role="alert" className="py-8 text-sm font-medium text-rose-700">
-        지원자를 불러오지 못했습니다.
-      </p>
+      <BoardErrorState
+        isRetrying={candidatesQuery.isFetching}
+        onRetry={() => void candidatesQuery.refetch()}
+      />
     )
   }
 
   function resetFilters() {
     setName('')
     setRole(ALL_ROLES)
+  }
+
+  if (candidates.length === 0) {
+    return <BoardEmptyState kind="all" />
   }
 
   return (
@@ -58,7 +64,11 @@ export function CandidatePipelineBoard() {
         onRoleChange={setRole}
         onReset={resetFilters}
       />
-      <PipelineBoard candidates={filteredCandidates} />
+      {filteredCandidates.length === 0 ? (
+        <BoardEmptyState kind="filtered" onResetFilters={resetFilters} />
+      ) : (
+        <PipelineBoard candidates={filteredCandidates} />
+      )}
     </>
   )
 }

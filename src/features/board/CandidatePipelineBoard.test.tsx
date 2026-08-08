@@ -132,10 +132,11 @@ describe('지원자 파이프라인 조회', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('검색 결과 0 / 5명')).toBeInTheDocument()
     })
-
-    await user.click(
-      screen.getByRole('button', { name: '검색 및 필터 초기화' }),
+    expect(screen.getByRole('status')).toHaveTextContent(
+      '조건에 맞는 지원자가 없습니다',
     )
+
+    await user.click(screen.getByRole('button', { name: '필터 초기화' }))
 
     await waitFor(() => {
       expect(screen.getByLabelText('검색 결과 5 / 5명')).toBeInTheDocument()
@@ -146,6 +147,64 @@ describe('지원자 파이프라인 조회', () => {
     expect(screen.getByRole('combobox', { name: '지원 직무' })).toHaveValue(
       'all',
     )
+  })
+
+  it('조회 실패 상태에서 재시도해 지원자 목록을 표시한다', async () => {
+    let requestCount = 0
+    server.use(
+      http.get('*/api/candidates', () => {
+        requestCount += 1
+
+        if (requestCount === 1) {
+          return HttpResponse.json(
+            { message: 'Mock API 요청에 실패했습니다.' },
+            { status: 503 },
+          )
+        }
+
+        return HttpResponse.json({ candidates })
+      }),
+    )
+    const user = userEvent.setup()
+    const queryClient = createTestQueryClient()
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CandidatePipelineBoard />
+      </QueryClientProvider>,
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      '지원자를 불러오지 못했습니다',
+    )
+    await user.click(screen.getByRole('button', { name: '다시 시도' }))
+
+    expect(
+      await screen.findByRole('article', { name: candidates[0].name }),
+    ).toBeInTheDocument()
+    expect(requestCount).toBe(2)
+  })
+
+  it('조회 결과에 지원자가 없으면 전체 빈 상태를 표시한다', async () => {
+    server.use(
+      http.get('*/api/candidates', () =>
+        HttpResponse.json({ candidates: [] }),
+      ),
+    )
+    const queryClient = createTestQueryClient()
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CandidatePipelineBoard />
+      </QueryClientProvider>,
+    )
+
+    expect(
+      await screen.findByText('등록된 지원자가 없습니다'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('region', { name: '지원자 검색 및 필터' }),
+    ).not.toBeInTheDocument()
   })
 
   it('키보드로 선택한 단계를 PATCH 요청하고 성공 후 컬럼을 이동한다', async () => {
