@@ -41,4 +41,4 @@ MSW를 사용합니다. 모든 요청에 200~800ms의 무작위 네트워크 지
 
 ## 배포 링크
 
-Vercel 프로젝트와 `LeeEugene1/hiring-pipeline-board` GitHub 저장소를 연결했습니다. 아직 애플리케이션이 초기화되지 않아 배포는 생성하지 않았으며, 실제 애플리케이션 배포를 검증한 뒤 URL을 추가합니다.
+Vercel 프로젝트와 `LeeEugene1/hiring-pipeline-board` GitHub 저장소를 연결했습니다. 연결 후 자동 배포는 생성됐지만 아직 애플리케이션 진입점이 없어 공개 URL이 404를 반환합니다. 실제 애플리케이션 배포를 검증한 뒤 URL을 추가합니다.

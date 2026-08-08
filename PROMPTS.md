@@ -85,7 +85,8 @@
 
 ### 관련 커밋
 
-`chore(deploy): Vercel Git 연동을 기록한다`
+- `chore(deploy): Vercel Git 연동을 기록한다`
+- `docs(deploy): Vercel 자동 배포 결과를 기록한다`
 
 ### 프롬프트 원문
 
@@ -103,4 +104,5 @@
 - Vercel 계정의 GitHub OAuth 연결과 GitHub App의 저장소 접근 권한이 별개임을 확인하고, `LeeEugene1/hiring-pipeline-board` 저장소 접근만 허용했다.
 - Vercel Git 설정 화면에서 저장소가 연결됐다는 성공 알림과 `Connected just now` 상태를 확인했다.
 - Vercel CLI로 프로젝트 소유자, 루트 디렉터리, Node.js 24.x 설정을 확인했다.
-- 아직 `package.json`과 애플리케이션이 없어 배포가 생성되지 않은 상태를 확인하고, 빈 저장소를 실제 배포 완료로 표현하지 않았다.
+- Git 연결 직후에는 배포가 없었지만 브랜치 푸시 후 Production 배포가 `Ready` 상태로 자동 생성되고 GitHub의 Vercel 체크와 제출 검증이 통과한 것을 확인했다.
+- 아직 `package.json`과 애플리케이션 진입점이 없어 공개 Vercel 별칭이 HTTP 404를 반환하는 것을 확인하고, 연결 성공을 실제 애플리케이션 배포 완료로 표현하지 않았다.
