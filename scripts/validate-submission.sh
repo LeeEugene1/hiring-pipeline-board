@@ -161,7 +161,7 @@ fi
 
 print_section '8. Pull Request 작업 흐름'
 
-current_branch="${GITHUB_HEAD_REF:-$(git branch --show-current)}"
+current_branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-$(git branch --show-current)}}"
 if git remote get-url origin >/dev/null 2>&1; then
   report_pass 'origin 원격 저장소가 연결되어 있습니다.'
 else
