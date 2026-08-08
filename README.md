@@ -157,6 +157,6 @@ src/
 
 ## 배포
 
-[Vercel 최종 배포 페이지](https://hiring-pipeline-board-nqrx91bqj-leeeugene1s-projects.vercel.app/)
+[Vercel 최종 배포 페이지](https://hiring-pipeline-board.vercel.app/)
 
 Pull Request마다 Preview 배포와 자동 검증을 실행합니다. `main` 브랜치 배포는 검증이 통과한 경우에만 Production 환경에 반영합니다.
