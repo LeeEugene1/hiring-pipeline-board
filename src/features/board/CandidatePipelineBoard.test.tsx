@@ -16,6 +16,7 @@ import {
 import { createCandidateSeed } from '../../data/candidateSeed'
 import type { Candidate, CandidateStage } from '../../types/candidate'
 import { CandidatePipelineBoard } from './CandidatePipelineBoard'
+import { CANDIDATES_QUERY_KEY } from './candidateQueries'
 
 let candidates: Candidate[]
 let requestedStage: CandidateStage | null
@@ -175,17 +176,24 @@ describe('지원자 파이프라인 조회', () => {
     ).toBeInTheDocument()
   })
 
-  it('PATCH 실패 시 기존 컬럼을 유지하고 카드에 오류를 표시한다', async () => {
+  it('응답 전에 이동하고 PATCH 실패 시 snapshot으로 복구한다', async () => {
+    let releaseFailureResponse = () => {}
+    const failureResponseGate = new Promise<void>((resolve) => {
+      releaseFailureResponse = resolve
+    })
     server.use(
-      http.patch('*/api/candidates/:candidateId/stage', () =>
-        HttpResponse.json(
+      http.patch('*/api/candidates/:candidateId/stage', async () => {
+        await failureResponseGate
+
+        return HttpResponse.json(
           { message: 'Mock API 요청에 실패했습니다.' },
           { status: 503 },
-        ),
-      ),
+        )
+      }),
     )
     const user = userEvent.setup()
     const candidate = candidates[0]
+    const otherCandidate = candidates[1]
     const queryClient = createTestQueryClient()
 
     render(
@@ -201,6 +209,22 @@ describe('지원자 파이프라인 조회', () => {
     )
     await user.click(screen.getByRole('menuitem', { name: '면접' }))
 
+    expect(
+      within(screen.getByRole('region', { name: '면접' })).getByRole(
+        'article',
+        { name: candidate.name },
+      ),
+    ).toBeInTheDocument()
+
+    queryClient.setQueryData<Candidate[]>(CANDIDATES_QUERY_KEY, (current) =>
+      current?.map((currentCandidate) =>
+        currentCandidate.id === otherCandidate.id
+          ? { ...currentCandidate, stage: 'offer' }
+          : currentCandidate,
+      ),
+    )
+    releaseFailureResponse()
+
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Mock API 요청에 실패했습니다.',
     )
@@ -208,6 +232,12 @@ describe('지원자 파이프라인 조회', () => {
       within(screen.getByRole('region', { name: '서류검토' })).getByRole(
         'article',
         { name: candidate.name },
+      ),
+    ).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('region', { name: '처우협의' })).getByRole(
+        'article',
+        { name: otherCandidate.name },
       ),
     ).toBeInTheDocument()
   })
