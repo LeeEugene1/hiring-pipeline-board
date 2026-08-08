@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
@@ -7,11 +8,14 @@ import { CandidateCard } from './CandidateCard'
 describe('지원자 카드', () => {
   it('이름, 직무, 지원일과 현재 단계를 표시한다', () => {
     const [candidate] = createCandidateSeed(1)
+    const queryClient = new QueryClient()
 
     render(
-      <ol>
-        <CandidateCard candidate={candidate} />
-      </ol>,
+      <QueryClientProvider client={queryClient}>
+        <ol>
+          <CandidateCard candidate={candidate} />
+        </ol>
+      </QueryClientProvider>,
     )
 
     expect(
@@ -22,6 +26,6 @@ describe('지원자 카드', () => {
       'datetime',
       candidate.appliedAt,
     )
-    expect(screen.getByText('서류검토')).toBeInTheDocument()
+    expect(screen.getAllByText('서류검토')).toHaveLength(2)
   })
 })

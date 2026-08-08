@@ -4,6 +4,7 @@ import {
   PIPELINE_STAGE_LABELS,
   type Candidate,
 } from '../../types/candidate'
+import { CandidateStageMenu } from '../candidate/stage/CandidateStageMenu'
 
 type CandidateCardProps = {
   candidate: Candidate
@@ -55,6 +56,9 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
             </dd>
           </div>
         </dl>
+        <div className="mt-3 border-t border-slate-100 pt-3">
+          <CandidateStageMenu candidate={candidate} />
+        </div>
       </article>
     </li>
   )
