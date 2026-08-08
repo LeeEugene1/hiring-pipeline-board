@@ -58,6 +58,7 @@
 
 - `chore(ci): Pull Request 자동 검증을 추가한다`
 - `fix(ci): CI 커밋 기록 검증을 바로잡는다`
+- `docs(prompts): CI 원격 검증 결과를 기록한다`
 
 ### 프롬프트 원문
 
@@ -77,4 +78,5 @@
 - GitHub 공식 문서와 공식 Actions 릴리스를 확인해 Pull Request 트리거, 읽기 전용 권한, Node 설정 방식을 검토했다.
 - 워크플로 YAML 구문, Node 프로젝트 확인 스크립트의 보류·성공·실패 분기, 전체 제출 검증 스크립트를 직접 실행해 확인했다.
 - PR의 첫 GitHub Actions 실행은 통과했지만 로그에서 shallow checkout과 detached HEAD 때문에 커밋 수와 브랜치명이 부정확한 문제를 발견했다.
-- 전체 Git 이력을 checkout하고 `GITHUB_HEAD_REF`를 우선 사용하도록 수정한 뒤 원격 실행 로그에서 커밋 형식, 브랜치명, 보류 분기를 다시 확인하기로 했다.
+- 전체 Git 이력을 checkout하고 `GITHUB_HEAD_REF`를 우선 사용하도록 수정한 뒤 두 번째 원격 실행에서 커밋 7개, 커밋 제목 형식, `chore/github-actions` 브랜치 인식을 확인했다.
+- 두 번째 GitHub Actions 실행은 제출 검증 19개 통과, 경고 2개, 실패 0개로 완료됐고 애플리케이션 초기화 전 Node 검증 보류 안내도 확인했다.
