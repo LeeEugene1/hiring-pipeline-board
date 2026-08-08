@@ -1,5 +1,7 @@
 import { BriefcaseBusiness } from 'lucide-react'
 
+import { PipelineBoard } from '../features/board/PipelineBoard'
+
 export function App() {
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -13,10 +15,10 @@ export function App() {
       </header>
 
       <section
-        aria-label="보드 준비 상태"
-        className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6"
+        aria-label="채용 파이프라인 작업 영역"
+        className="mx-auto max-w-screen-2xl px-4 py-6 sm:px-6"
       >
-        <p className="text-sm text-slate-600">지원자 보드를 준비하고 있습니다.</p>
+        <PipelineBoard />
       </section>
     </main>
   )
