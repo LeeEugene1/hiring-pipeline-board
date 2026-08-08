@@ -56,7 +56,8 @@
 
 ### 관련 커밋
 
-`chore(ci): Pull Request 자동 검증을 추가한다`
+- `chore(ci): Pull Request 자동 검증을 추가한다`
+- `fix(ci): CI 커밋 기록 검증을 바로잡는다`
 
 ### 프롬프트 원문
 
@@ -75,3 +76,5 @@
 - merge commit을 요구하면서 모든 커밋 제목에 기능 커밋 형식을 적용하던 제출 스크립트의 모순을 발견해 merge commit은 제목 검사에서 제외했다.
 - GitHub 공식 문서와 공식 Actions 릴리스를 확인해 Pull Request 트리거, 읽기 전용 권한, Node 설정 방식을 검토했다.
 - 워크플로 YAML 구문, Node 프로젝트 확인 스크립트의 보류·성공·실패 분기, 전체 제출 검증 스크립트를 직접 실행해 확인했다.
+- PR의 첫 GitHub Actions 실행은 통과했지만 로그에서 shallow checkout과 detached HEAD 때문에 커밋 수와 브랜치명이 부정확한 문제를 발견했다.
+- 전체 Git 이력을 checkout하고 `GITHUB_HEAD_REF`를 우선 사용하도록 수정한 뒤 원격 실행 로그에서 커밋 형식, 브랜치명, 보류 분기를 다시 확인하기로 했다.
