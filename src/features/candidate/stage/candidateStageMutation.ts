@@ -1,11 +1,26 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useMutation,
+  useMutationState,
+  useQueryClient,
+} from '@tanstack/react-query'
 
 import type { Candidate, CandidateStage } from '../../../types/candidate'
 import { CANDIDATES_QUERY_KEY } from '../../board/candidateQueries'
 
-type UpdateCandidateStageVariables = {
+export type UpdateCandidateStageVariables = {
   candidateId: string
+  requestId: number
+  signal: AbortSignal
   stage: CandidateStage
+}
+
+type CandidateStageSelection = Pick<
+  UpdateCandidateStageVariables,
+  'candidateId' | 'stage'
+>
+
+type UpdateCandidateStageContext = {
+  previousCandidate?: Candidate
 }
 
 type CandidateResponse = {
@@ -15,6 +30,13 @@ type CandidateResponse = {
 type ErrorResponse = {
   message?: string
 }
+
+export const CANDIDATE_STAGE_MUTATION_KEY = ['candidate-stage'] as const
+
+let nextRequestId = 0
+const latestRequestIdByCandidate = new Map<string, number>()
+const requestControllerByCandidate = new Map<string, AbortController>()
+const confirmedCandidateById = new Map<string, Candidate>()
 
 async function getErrorMessage(response: Response) {
   try {
@@ -32,6 +54,7 @@ async function getErrorMessage(response: Response) {
 
 export async function updateCandidateStage({
   candidateId,
+  signal,
   stage,
 }: UpdateCandidateStageVariables): Promise<Candidate> {
   const endpoint = new URL(
@@ -40,6 +63,7 @@ export async function updateCandidateStage({
   )
   const response = await fetch(endpoint, {
     method: 'PATCH',
+    signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ stage }),
   })
@@ -56,9 +80,68 @@ export async function updateCandidateStage({
 export function useUpdateCandidateStage() {
   const queryClient = useQueryClient()
 
-  return useMutation({
+  const mutation = useMutation<
+    Candidate,
+    Error,
+    UpdateCandidateStageVariables,
+    UpdateCandidateStageContext
+  >({
+    mutationKey: CANDIDATE_STAGE_MUTATION_KEY,
     mutationFn: updateCandidateStage,
-    onSuccess: (updatedCandidate) => {
+    onMutate: async ({ candidateId, requestId, stage }) => {
+      await queryClient.cancelQueries({ queryKey: CANDIDATES_QUERY_KEY })
+
+      const candidates = queryClient.getQueryData<Candidate[]>(
+        CANDIDATES_QUERY_KEY,
+      )
+      const previousCandidate = candidates?.find(
+        (candidate) => candidate.id === candidateId,
+      )
+
+      if (previousCandidate && !confirmedCandidateById.has(candidateId)) {
+        confirmedCandidateById.set(candidateId, previousCandidate)
+      }
+
+      queryClient.setQueryData<Candidate[]>(
+        CANDIDATES_QUERY_KEY,
+        (currentCandidates) =>
+          currentCandidates?.map((candidate) =>
+            candidate.id === candidateId
+              ? { ...candidate, stage }
+              : candidate,
+          ),
+      )
+
+      return {
+        previousCandidate:
+          confirmedCandidateById.get(candidateId) ?? previousCandidate,
+        requestId,
+      }
+    },
+    onError: (_error, { candidateId, requestId }, context) => {
+      if (latestRequestIdByCandidate.get(candidateId) !== requestId) {
+        return
+      }
+
+      if (!context?.previousCandidate) {
+        return
+      }
+
+      queryClient.setQueryData<Candidate[]>(
+        CANDIDATES_QUERY_KEY,
+        (candidates) =>
+          candidates?.map((candidate) =>
+            candidate.id === candidateId
+              ? context.previousCandidate!
+              : candidate,
+          ),
+      )
+    },
+    onSuccess: (updatedCandidate, { candidateId, requestId }) => {
+      if (latestRequestIdByCandidate.get(candidateId) !== requestId) {
+        return
+      }
+
       queryClient.setQueryData<Candidate[]>(
         CANDIDATES_QUERY_KEY,
         (candidates) =>
@@ -67,5 +150,57 @@ export function useUpdateCandidateStage() {
           ),
       )
     },
+    onSettled: (_data, _error, { candidateId, requestId }) => {
+      if (latestRequestIdByCandidate.get(candidateId) !== requestId) {
+        return
+      }
+
+      latestRequestIdByCandidate.delete(candidateId)
+      requestControllerByCandidate.delete(candidateId)
+      confirmedCandidateById.delete(candidateId)
+    },
   })
+
+  function mutateStage(selection: CandidateStageSelection) {
+    requestControllerByCandidate.get(selection.candidateId)?.abort()
+
+    const controller = new AbortController()
+    const requestId = ++nextRequestId
+
+    requestControllerByCandidate.set(selection.candidateId, controller)
+    latestRequestIdByCandidate.set(selection.candidateId, requestId)
+    mutation.mutate({ ...selection, requestId, signal: controller.signal })
+  }
+
+  return { ...mutation, mutateStage }
+}
+
+export function useCandidateStageMutationState(candidateId: string) {
+  const mutationStates = useMutationState({
+    filters: { mutationKey: CANDIDATE_STAGE_MUTATION_KEY },
+    select: (mutation) => ({
+      error: mutation.state.error,
+      status: mutation.state.status,
+      submittedAt: mutation.state.submittedAt,
+      variables: mutation.state.variables as
+        | UpdateCandidateStageVariables
+        | undefined,
+    }),
+  })
+  const latestState = mutationStates
+    .filter((state) => state.variables?.candidateId === candidateId)
+    .sort(
+      (first, second) =>
+        (first.variables?.requestId ?? first.submittedAt) -
+        (second.variables?.requestId ?? second.submittedAt),
+    )
+    .at(-1)
+
+  return {
+    error:
+      latestState?.status === 'error' && latestState.error instanceof Error
+        ? latestState.error
+        : null,
+    isPending: latestState?.status === 'pending',
+  }
 }

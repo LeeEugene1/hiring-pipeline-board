@@ -7,7 +7,11 @@ import { getRandomNetworkDelay, shouldFailRequest } from './networkPolicy'
 async function applyNetworkConditions(request: Request) {
   await delay(getRandomNetworkDelay())
 
-  return shouldFailRequest(request)
+  if (request.signal.aborted) {
+    return 'aborted'
+  }
+
+  return shouldFailRequest(request) ? 'failed' : 'success'
 }
 
 function createFailureResponse() {
@@ -19,7 +23,13 @@ function createFailureResponse() {
 
 export const handlers: RequestHandler[] = [
   http.get('*/api/candidates', async ({ request }) => {
-    if (await applyNetworkConditions(request)) {
+    const networkResult = await applyNetworkConditions(request)
+
+    if (networkResult === 'aborted') {
+      return new HttpResponse(null, { status: 499 })
+    }
+
+    if (networkResult === 'failed') {
       return createFailureResponse()
     }
 
@@ -29,7 +39,13 @@ export const handlers: RequestHandler[] = [
   http.patch(
     '*/api/candidates/:candidateId/stage',
     async ({ params, request }) => {
-      if (await applyNetworkConditions(request)) {
+      const networkResult = await applyNetworkConditions(request)
+
+      if (networkResult === 'aborted') {
+        return new HttpResponse(null, { status: 499 })
+      }
+
+      if (networkResult === 'failed') {
         return createFailureResponse()
       }
 
