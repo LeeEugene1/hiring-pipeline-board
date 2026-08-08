@@ -169,3 +169,37 @@
 - 손상된 JSON이나 잘못된 후보자 구조는 그대로 반환하지 않고 200건 seed로 복구하도록 보완했다.
 - 린트와 타입 검사가 통과했고, seed·저장소·네트워크 정책·GET·PATCH·강제 실패·400·404를 포함한 테스트 17개가 통과했다.
 - 제출 하네스는 통과 25개, 경고 1개, 실패 0개였다. 남은 경고는 기능 커밋 전 작업 트리 변경사항이었다.
+
+## 07. GitHub Actions 검증과 Vercel 배포 연결
+
+### 관련 커밋
+
+`chore(deploy): 검증 후 Vercel 배포를 연결한다`
+
+`fix(lint): Vercel 산출물을 검사에서 제외한다`
+
+### 프롬프트 원문
+
+> 해당프로젝트 GitHub Actions를 추가해 PR마다 validate-submission.sh, 테스트, 린트, 빌드를 실행하도록 구성해줘
+
+> pr승인은 내가할수있도록해줘
+
+> vercel 연동해줘
+
+> githubaction 이랑 vercel배포랑 연동시키고싶어
+
+### AI 출력 요지
+
+- `main` 대상 Pull Request와 `main` push에서 제출 검증을 먼저 실행하고, 성공한 경우에만 Vercel을 배포하도록 제안했다.
+- Pull Request는 Preview, `main` push는 Production 환경으로 분리하고 포크 Pull Request에는 GitHub Actions Secrets를 제공하지 않도록 제안했다.
+- Vercel CLI의 `pull`, `build`, `deploy --prebuilt` 순서로 같은 Actions 실행 안에서 빌드와 배포를 수행하도록 구성했다.
+- PR 승인과 병합은 자동화하지 않고 저장소 소유자가 직접 수행하도록 유지했다.
+
+### 리뷰 및 검증
+
+- Vercel Git 연동만 사용하면 GitHub Actions 검증 결과와 독립적으로 배포될 수 있어 기각하고, `validate` 작업을 배포 작업의 선행 조건으로 지정했다.
+- GitHub Actions와 Vercel Git 연동을 함께 유지하면 같은 커밋이 두 번 배포되는 것을 확인해 Vercel 자체 Git 연결을 해제했다. Vercel 프로젝트와 기존 배포는 유지하고 Actions만 배포 주체로 사용한다.
+- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`를 저장소 Actions Secrets에 등록했으며 값은 로그와 문서에 기록하지 않았다.
+- Node 22.22.2에서 의존성 설치, 린트, 타입 검사, 테스트와 프로덕션 빌드를 실행해 통과했고 Vercel Preview 환경의 prebuilt 빌드도 통과했다.
+- 로컬 Vercel 빌드 후 제출 검증을 반복하자 ESLint가 `.vercel/output`의 생성 번들을 검사하는 문제를 발견했다. 생성물을 수정하지 않고 ESLint 전역 제외 경로에 `.vercel`을 추가했다.
+- PR #19에서 제출 검증과 GitHub Actions 기반 Vercel Preview 배포가 통과한 것을 확인했다. Production 배포는 사용자가 PR을 병합한 뒤 `main` push에서 실행되므로 아직 완료로 기록하지 않는다.

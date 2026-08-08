@@ -27,6 +27,10 @@ AI는 반복 사용 시 스킬이 적합하다고 제안했지만, 단일 과제
 
 독립된 기능은 별도 worktree와 기능 브랜치에서 병렬로 개발할 수 있게 한다. 다만 공통 문서, 의존성 파일, 애플리케이션 진입점과 공통 타입은 메인 에이전트가 단독으로 통합한다. 무제한 병렬 작업보다 파일 소유권과 의존 관계를 먼저 확인하는 통제된 병렬 방식을 선택했다.
 
+### CI/CD 정책
+
+GitHub Actions의 제출 검증이 통과한 경우에만 Vercel CLI로 배포한다. Pull Request는 Preview, `main` push는 Production 환경에 배포하고 포크 Pull Request는 비밀값을 제공하지 않는다. Vercel Git 자동 배포는 같은 커밋의 중복 배포를 막기 위해 Actions 배포 검증 후 해제한다. Vercel에 소스 빌드를 다시 맡기지 않고 Actions에서 생성한 prebuilt 결과만 올리므로 검증과 배포가 같은 소스를 사용하지만, GitHub Actions Secrets와 CLI 버전을 직접 관리해야 한다.
+
 ## 결정 2. 클라이언트 애플리케이션에 필요한 도구만 조합한다
 
 ### 배경
