@@ -14,6 +14,10 @@ npm run dev
 ## 주요 기능
 
 - React 애플리케이션과 TanStack Query Provider 구성
+- 서류검토, 면접, 처우협의, 최종합격, 불합격 단계 보드
+- 좁은 화면에서 단계 순서를 유지하는 가로 스크롤 레이아웃
+- TanStack Query로 조회한 지원자를 현재 단계별 카드로 분류
+- 카드에 지원자 이름, 직무, 지원일과 현재 단계 표시
 - MSW 기반 후보자 조회·단계 변경 API
 - 200명의 후보자 seed와 `localStorage` 영속 저장
 - 모든 API 요청의 200~800ms 지연과 기본 15% 실패 시뮬레이션
@@ -88,6 +92,7 @@ npm run build
 src/
 ├── app/      # 애플리케이션 화면, Provider와 smoke test
 ├── data/     # 후보자 seed와 localStorage 저장 계층
+├── features/ # 보드 등 사용자 기능
 ├── mocks/    # MSW handler와 네트워크 정책
 ├── test/     # 공통 테스트 설정
 ├── types/    # 후보자와 채용 단계 타입
