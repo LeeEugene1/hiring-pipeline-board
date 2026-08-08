@@ -101,7 +101,7 @@ else
   report_warning "현재 커밋이 ${commit_count}개입니다. 최종 제출 전 기능별 커밋이 필요합니다."
 fi
 
-invalid_commits="$(git log --format='%s' 2>/dev/null | grep -Ev '^(feat|fix|refactor|test|docs|chore)\([^)]+\): .+' || true)"
+invalid_commits="$(git log --no-merges --format='%s' 2>/dev/null | grep -Ev '^(feat|fix|refactor|test|docs|chore)\([^)]+\): .+' || true)"
 if [[ -z "$invalid_commits" ]]; then
   report_pass '커밋 제목이 type(scope): 한글 요약 형식을 따릅니다.'
 else

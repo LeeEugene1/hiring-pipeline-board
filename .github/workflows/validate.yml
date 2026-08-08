@@ -1,0 +1,74 @@
+name: PR 검증
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: 제출물, 테스트, 린트, 빌드
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v7
+
+      - name: 제출물 검증
+        run: ./scripts/validate-submission.sh
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Node.js 프로젝트 확인
+        id: node-project
+        shell: bash
+        run: |
+          if [[ ! -f package.json ]]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::애플리케이션 초기화 전이므로 테스트, 린트, 빌드를 보류합니다."
+            exit 0
+          fi
+
+          if [[ ! -f package-lock.json ]]; then
+            echo "::error::재현 가능한 의존성 설치를 위해 package-lock.json이 필요합니다."
+            exit 1
+          fi
+
+          node - <<'NODE'
+          const { scripts = {} } = require('./package.json')
+          const requiredScripts = ['test:run', 'lint', 'build']
+          const missingScripts = requiredScripts.filter((name) => !scripts[name])
+
+          if (missingScripts.length > 0) {
+            console.error(`필수 npm 스크립트가 없습니다: ${missingScripts.join(', ')}`)
+            process.exit(1)
+          }
+          NODE
+
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: 의존성 설치
+        if: steps.node-project.outputs.ready == 'true'
+        run: npm ci
+
+      - name: 테스트
+        if: steps.node-project.outputs.ready == 'true'
+        run: npm run test:run
+
+      - name: 린트
+        if: steps.node-project.outputs.ready == 'true'
+        run: npm run lint
+
+      - name: 빌드
+        if: steps.node-project.outputs.ready == 'true'
+        run: npm run build

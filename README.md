@@ -31,6 +31,8 @@ MSW를 사용합니다. 모든 요청에 200~800ms의 무작위 네트워크 지
 ./scripts/validate-submission.sh
 ```
 
+`main` 대상 Pull Request를 생성하거나 새 커밋을 푸시하면 GitHub Actions가 제출물 검증을 실행합니다. 애플리케이션 초기화 후에는 `npm ci`, 테스트, 린트, 빌드도 각각 실행하며 `package-lock.json` 또는 필수 npm 스크립트가 없으면 검증에 실패합니다.
+
 테스트와 강제 실패 재현 방법은 구현 후 추가합니다.
 
 ## 폴더 구조
