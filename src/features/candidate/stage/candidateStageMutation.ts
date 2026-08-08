@@ -9,8 +9,15 @@ import { CANDIDATES_QUERY_KEY } from '../../board/candidateQueries'
 
 export type UpdateCandidateStageVariables = {
   candidateId: string
+  requestId: number
+  signal: AbortSignal
   stage: CandidateStage
 }
+
+type CandidateStageSelection = Pick<
+  UpdateCandidateStageVariables,
+  'candidateId' | 'stage'
+>
 
 type UpdateCandidateStageContext = {
   previousCandidate?: Candidate
@@ -25,6 +32,11 @@ type ErrorResponse = {
 }
 
 export const CANDIDATE_STAGE_MUTATION_KEY = ['candidate-stage'] as const
+
+let nextRequestId = 0
+const latestRequestIdByCandidate = new Map<string, number>()
+const requestControllerByCandidate = new Map<string, AbortController>()
+const confirmedCandidateById = new Map<string, Candidate>()
 
 async function getErrorMessage(response: Response) {
   try {
@@ -42,6 +54,7 @@ async function getErrorMessage(response: Response) {
 
 export async function updateCandidateStage({
   candidateId,
+  signal,
   stage,
 }: UpdateCandidateStageVariables): Promise<Candidate> {
   const endpoint = new URL(
@@ -50,6 +63,7 @@ export async function updateCandidateStage({
   )
   const response = await fetch(endpoint, {
     method: 'PATCH',
+    signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ stage }),
   })
@@ -66,7 +80,7 @@ export async function updateCandidateStage({
 export function useUpdateCandidateStage() {
   const queryClient = useQueryClient()
 
-  return useMutation<
+  const mutation = useMutation<
     Candidate,
     Error,
     UpdateCandidateStageVariables,
@@ -74,7 +88,7 @@ export function useUpdateCandidateStage() {
   >({
     mutationKey: CANDIDATE_STAGE_MUTATION_KEY,
     mutationFn: updateCandidateStage,
-    onMutate: async ({ candidateId, stage }) => {
+    onMutate: async ({ candidateId, requestId, stage }) => {
       await queryClient.cancelQueries({ queryKey: CANDIDATES_QUERY_KEY })
 
       const candidates = queryClient.getQueryData<Candidate[]>(
@@ -83,6 +97,10 @@ export function useUpdateCandidateStage() {
       const previousCandidate = candidates?.find(
         (candidate) => candidate.id === candidateId,
       )
+
+      if (previousCandidate && !confirmedCandidateById.has(candidateId)) {
+        confirmedCandidateById.set(candidateId, previousCandidate)
+      }
 
       queryClient.setQueryData<Candidate[]>(
         CANDIDATES_QUERY_KEY,
@@ -94,9 +112,17 @@ export function useUpdateCandidateStage() {
           ),
       )
 
-      return { previousCandidate }
+      return {
+        previousCandidate:
+          confirmedCandidateById.get(candidateId) ?? previousCandidate,
+        requestId,
+      }
     },
-    onError: (_error, { candidateId }, context) => {
+    onError: (_error, { candidateId, requestId }, context) => {
+      if (latestRequestIdByCandidate.get(candidateId) !== requestId) {
+        return
+      }
+
       if (!context?.previousCandidate) {
         return
       }
@@ -111,7 +137,11 @@ export function useUpdateCandidateStage() {
           ),
       )
     },
-    onSuccess: (updatedCandidate) => {
+    onSuccess: (updatedCandidate, { candidateId, requestId }) => {
+      if (latestRequestIdByCandidate.get(candidateId) !== requestId) {
+        return
+      }
+
       queryClient.setQueryData<Candidate[]>(
         CANDIDATES_QUERY_KEY,
         (candidates) =>
@@ -120,7 +150,29 @@ export function useUpdateCandidateStage() {
           ),
       )
     },
+    onSettled: (_data, _error, { candidateId, requestId }) => {
+      if (latestRequestIdByCandidate.get(candidateId) !== requestId) {
+        return
+      }
+
+      latestRequestIdByCandidate.delete(candidateId)
+      requestControllerByCandidate.delete(candidateId)
+      confirmedCandidateById.delete(candidateId)
+    },
   })
+
+  function mutateStage(selection: CandidateStageSelection) {
+    requestControllerByCandidate.get(selection.candidateId)?.abort()
+
+    const controller = new AbortController()
+    const requestId = ++nextRequestId
+
+    requestControllerByCandidate.set(selection.candidateId, controller)
+    latestRequestIdByCandidate.set(selection.candidateId, requestId)
+    mutation.mutate({ ...selection, requestId, signal: controller.signal })
+  }
+
+  return { ...mutation, mutateStage }
 }
 
 export function useCandidateStageMutationState(candidateId: string) {
@@ -137,7 +189,11 @@ export function useCandidateStageMutationState(candidateId: string) {
   })
   const latestState = mutationStates
     .filter((state) => state.variables?.candidateId === candidateId)
-    .sort((first, second) => first.submittedAt - second.submittedAt)
+    .sort(
+      (first, second) =>
+        (first.variables?.requestId ?? first.submittedAt) -
+        (second.variables?.requestId ?? second.submittedAt),
+    )
     .at(-1)
 
   return {

@@ -34,7 +34,7 @@ export function CandidateStageMenu({ candidate }: CandidateStageMenuProps) {
       return
     }
 
-    stageMutation.mutate({ candidateId: candidate.id, stage })
+    stageMutation.mutateStage({ candidateId: candidate.id, stage })
   }
 
   return (
@@ -44,7 +44,7 @@ export function CandidateStageMenu({ candidate }: CandidateStageMenuProps) {
           type="button"
           title="이전 단계"
           aria-label={`${candidate.name} 이전 단계로 이동`}
-          disabled={mutationState.isPending || previousStage === undefined}
+          disabled={previousStage === undefined}
           onClick={() => {
             if (previousStage) {
               handleStageSelect(previousStage)
@@ -61,23 +61,20 @@ export function CandidateStageMenu({ candidate }: CandidateStageMenuProps) {
             <button
               type="button"
               aria-label={`${candidate.name} 단계 변경`}
-              disabled={mutationState.isPending}
+              aria-busy={mutationState.isPending}
               className="inline-flex min-h-7 w-full items-center justify-center gap-1 rounded-sm border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 outline-none hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
             >
-              {mutationState.isPending ? (
-                <>
+              <>
+                {PIPELINE_STAGE_LABELS[candidate.stage]}
+                {mutationState.isPending ? (
                   <LoaderCircle
                     aria-hidden="true"
                     className="size-3.5 animate-spin"
                   />
-                  변경 중
-                </>
-              ) : (
-                <>
-                  {PIPELINE_STAGE_LABELS[candidate.stage]}
+                ) : (
                   <ChevronDown aria-hidden="true" className="size-3.5" />
-                </>
-              )}
+                )}
+              </>
             </button>
           </DropdownMenu.Trigger>
 
@@ -116,7 +113,7 @@ export function CandidateStageMenu({ candidate }: CandidateStageMenuProps) {
           type="button"
           title="다음 단계"
           aria-label={`${candidate.name} 다음 단계로 이동`}
-          disabled={mutationState.isPending || nextStage === undefined}
+          disabled={nextStage === undefined}
           onClick={() => {
             if (nextStage) {
               handleStageSelect(nextStage)

@@ -65,6 +65,15 @@ function createTestQueryClient() {
   })
 }
 
+function createDeferred() {
+  let resolve = () => {}
+  const promise = new Promise<void>((promiseResolve) => {
+    resolve = promiseResolve
+  })
+
+  return { promise, resolve }
+}
+
 describe('지원자 파이프라인 조회', () => {
   it('API 조회 결과를 단계별 카드로 표시한다', async () => {
     const queryClient = createTestQueryClient()
@@ -238,6 +247,108 @@ describe('지원자 파이프라인 조회', () => {
       within(screen.getByRole('region', { name: '처우협의' })).getByRole(
         'article',
         { name: otherCandidate.name },
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('동일 후보자의 응답 순서가 역전되어도 마지막 단계를 유지한다', async () => {
+    const firstRequestStarted = createDeferred()
+    const secondRequestStarted = createDeferred()
+    const firstResponse = createDeferred()
+    const secondResponse = createDeferred()
+    const firstRequestFinished = createDeferred()
+
+    server.use(
+      http.patch(
+        '*/api/candidates/:candidateId/stage',
+        async ({ params, request }) => {
+          const body = (await request.json()) as { stage: CandidateStage }
+          const isFirstRequest = body.stage === 'interview'
+
+          if (isFirstRequest) {
+            firstRequestStarted.resolve()
+            await firstResponse.promise
+          } else {
+            secondRequestStarted.resolve()
+            await secondResponse.promise
+          }
+
+          if (request.signal.aborted) {
+            if (isFirstRequest) {
+              firstRequestFinished.resolve()
+            }
+
+            return new HttpResponse(null, { status: 499 })
+          }
+
+          const candidateId = String(params.candidateId)
+          const currentCandidate = candidates.find(
+            (candidate) => candidate.id === candidateId,
+          )!
+          const updatedCandidate = { ...currentCandidate, stage: body.stage }
+
+          candidates = candidates.map((candidate) =>
+            candidate.id === candidateId ? updatedCandidate : candidate,
+          )
+
+          if (isFirstRequest) {
+            firstRequestFinished.resolve()
+          }
+
+          return HttpResponse.json({ candidate: updatedCandidate })
+        },
+      ),
+    )
+
+    const user = userEvent.setup()
+    const candidate = candidates[0]
+    const queryClient = createTestQueryClient()
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CandidatePipelineBoard />
+      </QueryClientProvider>,
+    )
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: `${candidate.name} 다음 단계로 이동`,
+      }),
+    )
+    await firstRequestStarted.promise
+
+    await user.click(
+      screen.getByRole('button', {
+        name: `${candidate.name} 다음 단계로 이동`,
+      }),
+    )
+    await secondRequestStarted.promise
+
+    expect(
+      within(screen.getByRole('region', { name: '처우협의' })).getByRole(
+        'article',
+        { name: candidate.name },
+      ),
+    ).toBeInTheDocument()
+
+    secondResponse.resolve()
+    await waitFor(() => expect(candidates[0].stage).toBe('offer'))
+
+    firstResponse.resolve()
+    await firstRequestFinished.promise
+    await waitFor(() => {
+      expect(
+        queryClient
+          .getQueryData<Candidate[]>(CANDIDATES_QUERY_KEY)
+          ?.find(({ id }) => id === candidate.id)?.stage,
+      ).toBe('offer')
+    })
+
+    expect(candidates[0].stage).toBe('offer')
+    expect(
+      within(screen.getByRole('region', { name: '처우협의' })).getByRole(
+        'article',
+        { name: candidate.name },
       ),
     ).toBeInTheDocument()
   })
