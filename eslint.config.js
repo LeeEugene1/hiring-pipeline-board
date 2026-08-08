@@ -6,7 +6,7 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'public/mockServiceWorker.js']),
+  globalIgnores(['dist', 'coverage', '.vercel', 'public/mockServiceWorker.js']),
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
     extends: [

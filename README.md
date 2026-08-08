@@ -125,4 +125,4 @@ src/
 
 ## 배포
 
-[Vercel 배포 페이지](https://hiring-pipeline-board.vercel.app)는 GitHub 저장소와 연결되어 있으며 현재 HTTP 200 응답을 확인했습니다. Pull Request마다 Preview 배포와 자동 검증을 실행합니다.
+Vercel 프로젝트 `leeeugene1s-projects/hiring-pipeline-board`를 사용합니다. GitHub Actions 기반 Production 배포를 실제로 검증한 뒤 공개 URL을 추가합니다.
