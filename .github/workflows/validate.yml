@@ -23,9 +23,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 제출물 검증
-        run: ./scripts/validate-submission.sh
-
       - name: Node.js 설정
         uses: actions/setup-node@v7
         with:
@@ -48,7 +45,7 @@ jobs:
 
           node - <<'NODE'
           const { scripts = {} } = require('./package.json')
-          const requiredScripts = ['test:run', 'lint', 'build']
+          const requiredScripts = ['test:run', 'lint', 'typecheck', 'build']
           const missingScripts = requiredScripts.filter((name) => !scripts[name])
 
           if (missingScripts.length > 0) {
@@ -63,14 +60,5 @@ jobs:
         if: steps.node-project.outputs.ready == 'true'
         run: npm ci
 
-      - name: 테스트
-        if: steps.node-project.outputs.ready == 'true'
-        run: npm run test:run
-
-      - name: 린트
-        if: steps.node-project.outputs.ready == 'true'
-        run: npm run lint
-
-      - name: 빌드
-        if: steps.node-project.outputs.ready == 'true'
-        run: npm run build
+      - name: 제출물, 테스트, 린트, 타입, 빌드 검증
+        run: ./scripts/validate-submission.sh

@@ -4,11 +4,18 @@
 
 ## 설치 및 실행 방법
 
-애플리케이션 초기 설정 후 실제 명령을 기재합니다.
+Node.js 22.12 이상이 필요합니다.
+
+```bash
+npm install
+npm run dev
+```
 
 ## 주요 기능
 
-구현과 검증을 마친 기능만 기재합니다.
+- React 애플리케이션과 TanStack Query Provider 구성
+- 개발 환경에서 MSW Service Worker 자동 시작
+- 린트, 타입 검사, 테스트와 프로덕션 빌드 자동 검증
 
 ## 기술 스택
 
@@ -19,25 +26,39 @@
 - MSW
 - Vitest
 - Testing Library
-- CSS Modules
+- Tailwind CSS
+- Lucide React
+
+shadcn/ui는 전체 컴포넌트를 미리 설치하지 않고 상세 패널처럼 접근성 상호작용이 복잡한 기능에서 필요한 컴포넌트만 추가합니다. 클라이언트 화면 상태는 React 내부 상태로 관리하며 Zustand는 사용하지 않습니다.
 
 ## Mock API
 
-MSW를 사용합니다. 모든 요청에 200~800ms의 무작위 네트워크 지연과 약 15%의 실패를 적용하고, 단계 변경 결과는 새로고침 후에도 유지되도록 구성할 예정입니다.
+개발 환경에서 MSW Service Worker를 시작하도록 구성했습니다. 후보자 handler, 200~800ms 무작위 지연, 약 15% 실패와 새로고침 후 저장은 이슈 #5에서 추가합니다.
 
 ## 검증 방법
 
 ```bash
+npm run lint
+npm run typecheck
+npm run test:run
+npm run build
 ./scripts/validate-submission.sh
 ```
 
-`main` 대상 Pull Request를 생성하거나 새 커밋을 푸시하면 GitHub Actions가 제출물 검증을 실행합니다. 애플리케이션 초기화 후에는 `npm ci`, 테스트, 린트, 빌드도 각각 실행하며 `package-lock.json` 또는 필수 npm 스크립트가 없으면 검증에 실패합니다.
+`main` 대상 Pull Request를 생성하거나 새 커밋을 푸시하면 GitHub Actions가 `npm ci` 이후 같은 검증을 실행합니다.
 
 테스트와 강제 실패 재현 방법은 구현 후 추가합니다.
 
 ## 폴더 구조
 
-애플리케이션 초기 설정 후 실제 구조를 기재합니다.
+```text
+src/
+├── app/      # 애플리케이션 화면, Provider와 smoke test
+├── mocks/    # MSW browser worker와 handler 진입점
+├── test/     # 공통 테스트 설정
+├── index.css # Tailwind CSS 진입점과 전역 기본값
+└── main.tsx  # MSW 시작과 React 마운트
+```
 
 ## 배포 링크
 
