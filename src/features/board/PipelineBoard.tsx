@@ -1,4 +1,7 @@
+import { useRef, useState } from 'react'
+
 import type { Candidate } from '../../types/candidate'
+import { CandidateDetailPanel } from '../candidate/detail/CandidateDetailPanel'
 import { CandidateCard } from './CandidateCard'
 import { PipelineColumn } from './PipelineColumn'
 import {
@@ -11,7 +14,16 @@ type PipelineBoardProps = {
 }
 
 export function PipelineBoard({ candidates = [] }: PipelineBoardProps) {
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+    null,
+  )
+  const detailTriggerRef = useRef<HTMLElement | null>(null)
   const candidatesByStage = groupCandidatesByStage(candidates)
+
+  function openCandidateDetail(candidate: Candidate, trigger: HTMLButtonElement) {
+    detailTriggerRef.current = trigger
+    setSelectedCandidate(candidate)
+  }
 
   return (
     <section aria-labelledby="pipeline-board-title" className="min-w-0">
@@ -31,13 +43,22 @@ export function PipelineBoard({ candidates = [] }: PipelineBoardProps) {
                 className="space-y-3"
               >
                 {candidatesByStage[stage.id].map((candidate) => (
-                  <CandidateCard key={candidate.id} candidate={candidate} />
+                  <CandidateCard
+                    key={candidate.id}
+                    candidate={candidate}
+                    onOpenDetail={openCandidateDetail}
+                  />
                 ))}
               </ol>
             </PipelineColumn>
           ))}
         </div>
       </div>
+      <CandidateDetailPanel
+        candidate={selectedCandidate}
+        onClose={() => setSelectedCandidate(null)}
+        triggerRef={detailTriggerRef}
+      />
     </section>
   )
 }

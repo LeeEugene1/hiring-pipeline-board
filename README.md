@@ -19,6 +19,7 @@ npm run dev
 
 - 서류검토, 면접, 처우협의, 최종합격, 불합격의 다섯 단계 칸반 보드
 - 이름, 직무, 지원일과 현재 단계를 표시하는 지원자 카드 200건
+- 카드 선택으로 여는 지원자 상세 패널과 접근성 포커스 관리
 - 전체 단계 선택 메뉴와 인접 단계 이동 버튼
 - 마우스와 키보드를 지원하는 단계 변경
 - 응답 전 즉시 이동하는 낙관적 업데이트와 실패 시 정확한 rollback
@@ -36,6 +37,13 @@ npm run dev
 
 DnD 대신 명시적 액션을 선택한 배경과 트레이드오프는 [DECISIONS.md](./DECISIONS.md#결정-4-명시적-액션-버튼으로-단계를-이동한다)에 기록했습니다.
 
+## 지원자 상세 패널
+
+- 카드의 정보 영역을 마우스로 선택하거나 키보드 `Enter`, `Space`로 실행하면 상세 패널이 열립니다.
+- 패널에는 지원자의 현재 단계, 연락처, 지원 직무, 지원일, 경력과 요약을 표시합니다.
+- 오버레이 또는 닫기 버튼을 클릭하면 닫히며 패널 내부 클릭과 `ESC` 입력으로는 닫히지 않습니다.
+- 열릴 때 닫기 버튼으로 포커스를 옮기고, 닫힌 뒤 상세 패널을 열었던 카드로 복귀합니다.
+
 ## 기술 스택
 
 | 구분 | 사용 기술 |
@@ -43,7 +51,7 @@ DnD 대신 명시적 액션을 선택한 배경과 트레이드오프는 [DECISI
 | 애플리케이션 | React, TypeScript, Vite |
 | 서버 상태 | TanStack Query |
 | Mock API | MSW, localStorage |
-| 스타일과 UI | Tailwind CSS, Radix UI Dropdown Menu, Lucide React |
+| 스타일과 UI | Tailwind CSS, Radix UI Dialog·Dropdown Menu, Lucide React |
 | 테스트 | Vitest, Testing Library |
 
 후보자 API 상태는 TanStack Query가 관리하고 화면 전용 상태는 React 내부 상태로 유지합니다. 별도 전역 상태 라이브러리는 사용하지 않습니다.
@@ -95,7 +103,7 @@ npm run build
 
 `main` 대상 Pull Request를 생성하거나 새 커밋을 푸시하면 GitHub Actions가 `npm ci` 이후 같은 검증을 실행합니다.
 
-테스트는 단계 순서와 개수, 카드 필드, 지원자 중복 여부, Mock API 조회 연결, 좌우 버튼 경계, 키보드 단계 선택, 응답 전 즉시 이동, 실패 rollback, 다른 후보자 상태 보존과 연속 요청 응답 역전을 검증합니다. 강제 실패 모드는 위의 `localStorage` 설정으로 재현할 수 있습니다.
+테스트는 단계 순서와 개수, 카드 필드, 상세 패널 정보·외부 클릭·ESC 예외·포커스 복귀, 지원자 중복 여부, Mock API 조회 연결, 좌우 버튼 경계, 키보드 단계 선택, 응답 전 즉시 이동, 실패 rollback, 다른 후보자 상태 보존과 연속 요청 응답 역전을 검증합니다. 강제 실패 모드는 위의 `localStorage` 설정으로 재현할 수 있습니다.
 
 ## 폴더 구조
 
@@ -103,7 +111,7 @@ npm run build
 src/
 ├── app/      # 애플리케이션 화면, Provider와 smoke test
 ├── data/     # 후보자 seed와 localStorage 저장 계층
-├── features/ # 보드, 지원자 카드와 단계 이동 기능
+├── features/ # 보드, 지원자 카드, 상세 패널과 단계 이동 기능
 ├── mocks/    # MSW handler와 네트워크 정책
 ├── test/     # 공통 테스트 설정
 ├── types/    # 후보자와 채용 단계 타입

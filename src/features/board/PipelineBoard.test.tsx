@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { createCandidateSeed } from '../../data/candidateSeed'
@@ -52,5 +53,25 @@ describe('파이프라인 보드 레이아웃', () => {
     expect(screen.getByLabelText('처우협의 지원자 1명')).toBeInTheDocument()
     expect(screen.getByLabelText('최종합격 지원자 1명')).toBeInTheDocument()
     expect(screen.getByLabelText('불합격 지원자 1명')).toBeInTheDocument()
+  })
+
+  it('카드 정보 영역을 선택하면 지원자 상세 패널을 연다', async () => {
+    const user = userEvent.setup()
+    const [candidate] = createCandidateSeed(1)
+    const queryClient = new QueryClient()
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <PipelineBoard candidates={[candidate]} />
+      </QueryClientProvider>,
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: `${candidate.name} 상세 보기` }),
+    )
+
+    expect(
+      screen.getByRole('dialog', { name: `${candidate.name} 지원자 상세` }),
+    ).toBeInTheDocument()
   })
 })
