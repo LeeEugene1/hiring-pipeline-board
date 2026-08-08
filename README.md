@@ -2,7 +2,7 @@
 
 채용 담당자가 지원자를 채용 단계별로 조회하고 이동할 수 있는 프론트엔드 과제 프로젝트입니다.
 
-- 배포: [hiring-pipeline-board.vercel.app](https://hiring-pipeline-board.vercel.app)
+- 배포: [채용 파이프라인 보드 실행](https://hiring-pipeline-board-nqrx91bqj-leeeugene1s-projects.vercel.app/)
 - 요구사항 해석과 기술 선택: [DECISIONS.md](./DECISIONS.md)
 - AI 협업 및 검증 기록: [PROMPTS.md](./PROMPTS.md)
 
@@ -27,6 +27,20 @@ npm run dev
 - 응답 전 즉시 이동하는 낙관적 업데이트와 실패 시 정확한 rollback
 - Mock API 저장, 새로고침 이후 상태 유지와 카드별 오류 피드백
 - 좁은 화면에서도 단계 순서를 유지하는 보드 내부 가로 스크롤
+
+## 기능별 구현 이슈
+
+| 구분 | 관련 이슈 |
+| --- | --- |
+| 기술 스택과 개발 환경 | [#4 chore(app): 기술 스택과 개발 환경을 구성한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/4) |
+| 후보자 Mock API와 저장 계층 | [#5 feat(mock): 후보자 Mock API와 저장 계층을 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/5) |
+| 파이프라인 컬럼과 지원자 카드 | [#6 feat(board): 파이프라인 컬럼과 지원자 카드를 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/6) |
+| 단계 이동과 API 저장 | [#7 feat(stage): 지원자 단계 이동과 API 저장을 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/7) |
+| 낙관적 업데이트, 실패 복구와 경쟁 상태 | [#8 feat(stage): 낙관적 업데이트와 실패 복구를 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/8) |
+| 이름 검색과 직무 필터 | [#9 feat(filter): 이름 검색과 직무 필터를 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/9) |
+| 지원자 상세 패널 | [#10 feat(detail): 지원자 상세 패널을 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/10) |
+| 로딩, 오류와 빈 상태 | [#11 feat(state): 로딩 오류 빈 상태를 구현한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/11) |
+| 최종 문서와 제출 검증 | [#12 docs(submission): 제출 문서와 검증 결과를 정리한다](https://github.com/LeeEugene1/hiring-pipeline-board/issues/12) |
 
 ## 지원자 단계 이동
 
@@ -143,4 +157,6 @@ src/
 
 ## 배포
 
-[Vercel 배포 페이지](https://hiring-pipeline-board.vercel.app)는 HTTP 200 응답을 확인했습니다. Pull Request마다 Preview 배포와 자동 검증을 실행합니다.
+[Vercel 최종 배포 페이지](https://hiring-pipeline-board-nqrx91bqj-leeeugene1s-projects.vercel.app/)
+
+Pull Request마다 Preview 배포와 자동 검증을 실행합니다. `main` 브랜치 배포는 검증이 통과한 경우에만 Production 환경에 반영합니다.
