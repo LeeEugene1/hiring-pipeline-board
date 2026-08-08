@@ -144,25 +144,28 @@
 - PR 첫 원격 검증에서 `npm ci`보다 제출 하네스가 먼저 실행되어 ESLint, Vite와 Vitest를 찾지 못하는 문제를 발견했다. 로컬에는 이미 `node_modules`가 있어 드러나지 않았던 CI 순서 문제였다.
 - GitHub Actions를 Node 설정, 프로젝트 확인, 의존성 설치, 통합 제출 검증 순서로 수정했다. 하네스가 테스트·린트·타입 검사·빌드를 모두 실행하므로 중복 단계는 제거하고 필수 스크립트 확인에 `typecheck`를 추가했다.
 
-## 06. GitHub Actions 검증과 Vercel 배포 연결
+## 06. 후보자 Mock API와 저장 계층
 
 ### 관련 커밋
 
-`chore(deploy): 검증 후 Vercel 배포를 연결한다`
+`feat(mock): 후보자 Mock API와 저장 계층을 구현한다`
 
 ### 프롬프트 원문
 
-> githubaction 이랑 vercel배포랑 연동시키고싶어
+> #5 이슈도 진행하자.
 
 ### AI 출력 요지
 
-- GitHub Actions 검증 성공을 Vercel 배포의 선행 조건으로 두도록 제안했다.
-- Pull Request에는 Preview, `main` push에는 Production 배포를 생성하는 Vercel CLI 기반 워크플로를 제안했다.
-- Vercel 프로젝트 식별자와 접근 토큰을 GitHub Actions Secrets로 저장하고 포크 Pull Request에서는 배포를 건너뛰도록 제안했다.
+- 후보자 타입, 200건 seed, localStorage 저장소, 네트워크 정책과 MSW handler를 역할별 파일로 분리했다.
+- `GET /api/candidates`와 `PATCH /api/candidates/:candidateId/stage`를 구현하고 모든 요청에 200~800ms 지연과 15% 실패를 적용했다.
+- 무작위 실패 때문에 테스트가 불안정해지지 않도록 `always`, `never`, `random` 실패 모드를 제안했다.
+- 저장 데이터 손상, 유효하지 않은 단계와 존재하지 않는 후보자 오류를 구분했다.
 
 ### 리뷰 및 검증
 
-- 기존 Vercel Git 연동은 GitHub Actions와 독립적으로 배포하므로 검증 성공 후 배포를 보장하지 못하고 중복 배포를 만든다는 점을 확인했다.
-- Vercel 공식 GitHub Actions 절차의 `vercel pull`, `vercel build`, `vercel deploy --prebuilt` 순서를 적용하고 CLI를 검증한 버전으로 고정했다.
-- Pull Request와 `main`의 이벤트·환경·배포 옵션을 분리하고, 포크 Pull Request에는 repository secrets가 전달되지 않도록 조건을 추가했다.
-- 워크플로 구문, 로컬 제출 검증, Preview 원격 실행과 Production 원격 실행을 순서대로 확인한다.
+- 무작위 지연과 실패를 handler 내부의 고정된 값으로 구현하면 경계값을 검증하기 어려워 지연 계산과 실패 판정을 순수 함수로 분리했다.
+- 테스트에서 지연 자체를 제거하는 방식은 모든 요청에 200~800ms 지연을 적용한다는 요구사항을 우회하므로 기각했다. 성공과 실패만 결정적으로 제어하고 실제 지연은 통합 테스트에서도 유지했다.
+- 후보자 배열을 모듈 변수에만 저장하면 새로고침 후 변경이 사라지므로 localStorage를 단일 저장 원본으로 사용했다.
+- 손상된 JSON이나 잘못된 후보자 구조는 그대로 반환하지 않고 200건 seed로 복구하도록 보완했다.
+- 린트와 타입 검사가 통과했고, seed·저장소·네트워크 정책·GET·PATCH·강제 실패·400·404를 포함한 테스트 17개가 통과했다.
+- 제출 하네스는 통과 25개, 경고 1개, 실패 0개였다. 남은 경고는 기능 커밋 전 작업 트리 변경사항이었다.
