@@ -143,3 +143,26 @@
 - 개발 서버에서 MSW Worker 시작 후 화면이 렌더링되는 것을 확인했다. 데스크톱과 375px 모바일 화면을 검사했고 모바일 가로 오버플로가 없었다.
 - PR 첫 원격 검증에서 `npm ci`보다 제출 하네스가 먼저 실행되어 ESLint, Vite와 Vitest를 찾지 못하는 문제를 발견했다. 로컬에는 이미 `node_modules`가 있어 드러나지 않았던 CI 순서 문제였다.
 - GitHub Actions를 Node 설정, 프로젝트 확인, 의존성 설치, 통합 제출 검증 순서로 수정했다. 하네스가 테스트·린트·타입 검사·빌드를 모두 실행하므로 중복 단계는 제거하고 필수 스크립트 확인에 `typecheck`를 추가했다.
+
+## 06. GitHub Actions 검증과 Vercel 배포 연결
+
+### 관련 커밋
+
+`chore(deploy): 검증 후 Vercel 배포를 연결한다`
+
+### 프롬프트 원문
+
+> githubaction 이랑 vercel배포랑 연동시키고싶어
+
+### AI 출력 요지
+
+- GitHub Actions 검증 성공을 Vercel 배포의 선행 조건으로 두도록 제안했다.
+- Pull Request에는 Preview, `main` push에는 Production 배포를 생성하는 Vercel CLI 기반 워크플로를 제안했다.
+- Vercel 프로젝트 식별자와 접근 토큰을 GitHub Actions Secrets로 저장하고 포크 Pull Request에서는 배포를 건너뛰도록 제안했다.
+
+### 리뷰 및 검증
+
+- 기존 Vercel Git 연동은 GitHub Actions와 독립적으로 배포하므로 검증 성공 후 배포를 보장하지 못하고 중복 배포를 만든다는 점을 확인했다.
+- Vercel 공식 GitHub Actions 절차의 `vercel pull`, `vercel build`, `vercel deploy --prebuilt` 순서를 적용하고 CLI를 검증한 버전으로 고정했다.
+- Pull Request와 `main`의 이벤트·환경·배포 옵션을 분리하고, 포크 Pull Request에는 repository secrets가 전달되지 않도록 조건을 추가했다.
+- 워크플로 구문, 로컬 제출 검증, Preview 원격 실행과 Production 원격 실행을 순서대로 확인한다.

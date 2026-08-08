@@ -47,6 +47,8 @@ npm run build
 
 `main` 대상 Pull Request를 생성하거나 새 커밋을 푸시하면 GitHub Actions가 `npm ci` 이후 같은 검증을 실행합니다.
 
+검증이 통과하면 GitHub Actions가 Pull Request에는 Vercel Preview를, `main`에는 Vercel Production을 배포합니다. 워크플로에는 `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` GitHub Actions Secrets가 필요합니다. 포크에서 생성한 Pull Request는 비밀값 보호를 위해 배포하지 않습니다.
+
 테스트와 강제 실패 재현 방법은 구현 후 추가합니다.
 
 ## 폴더 구조
@@ -62,4 +64,4 @@ src/
 
 ## 배포 링크
 
-Vercel 프로젝트와 `LeeEugene1/hiring-pipeline-board` GitHub 저장소를 연결했습니다. 연결 후 자동 배포는 생성됐지만 아직 애플리케이션 진입점이 없어 공개 URL이 404를 반환합니다. 실제 애플리케이션 배포를 검증한 뒤 URL을 추가합니다.
+Vercel 프로젝트 `leeeugene1s-projects/hiring-pipeline-board`를 사용합니다. GitHub Actions 기반 Production 배포를 실제로 검증한 뒤 공개 URL을 추가합니다.
